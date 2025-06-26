@@ -40,7 +40,7 @@ class ReciboController extends Controller
             $estadoServicio = $data[0]['estado_servicio'] ?? null;
             $mostrarModal = ($estadoServicio === "Activo" && !$yaRegistrado);
 
-            return $this->personalizado($data, true, $yaRegistrado ? "Ya está registrado" : "Existe pero no registrado", $mostrarModal);
+            return $this->personalizado($data, true, $yaRegistrado ? "Ya está registrado" : "Existe pero no se encuentra registrado al recibo digital", $mostrarModal);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al consultar el suministro',
