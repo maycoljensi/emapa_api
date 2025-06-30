@@ -17,7 +17,7 @@ class ReciboController extends Controller
             return response()->json(['message' => 'Número de suministro requerido'], 400);
         }
 
-        // Llamada a la API externa
+        // Paso 1: Llamada a la API externa que valida si el suministro existe
         $cliente = new Client();
         try {
             $response = $cliente->request('GET', 'http://127.0.0.1:8001/api/consultar_usuario', [
@@ -27,23 +27,27 @@ class ReciboController extends Controller
                 ]
             ]);
 
-            $data = json_decode($response->getBody(), true); // decodifica como array
+            $resultado = (string) $response->getBody(); // devuelve '1' o '0'
 
-            if (empty($data)) {
+            if ($resultado === '0') {
                 return $this->personalizado(null, false, "No existe el suministro");
             }
 
-            // Consulta local: ¿Está ya registrado en recibo_digital?
+            // Paso 2: Consulta local si ya está registrado en recibo_digital
             $clienteLocal = DB::select("SELECT * FROM recibo_digital WHERE numero_suministro = ?", [$suministro]);
 
             $yaRegistrado = !empty($clienteLocal);
-            $estadoServicio = $data[0]['estado_servicio'] ?? null;
-            $mostrarModal = ($estadoServicio === "Activo" && !$yaRegistrado);
+            $mostrarModal = !$yaRegistrado; // Si no está registrado, mostrar formulario
 
-            return $this->personalizado($data, true, $yaRegistrado ? "Ya está registrado" : "Existe pero no se encuentra registrado al recibo digital", $mostrarModal);
+            return $this->personalizado(
+                ['numero_suministro' => $suministro],
+                true,
+                $yaRegistrado ? "Ya está registrado" : "Existe pero no se encuentra registrado al recibo digital",
+                $mostrarModal
+            );
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Error al consultar el suministro',
+                'error' => 'Error al consultar el suministro no pasa al postgres',
                 'detalle' => $e->getMessage()
             ], 500);
         }
@@ -55,7 +59,6 @@ class ReciboController extends Controller
         return response()->json([
             'estado' => $estado,
             'mensaje' => $mensaje,
-            'datos' => $data,
             'mostrar_modal' => $mostrarModal
         ]);
     }

@@ -3,7 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\ReciboController;
-
+use App\Http\Controllers\API\ReciboDigitalController;
+use App\Http\Controllers\Api\DeudaController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,3 +18,8 @@ use App\Http\Controllers\API\ReciboController;
 
 
 Route::post('/consulta_duplicado', [ReciboController::class, 'getReciboDuplicado']);
+
+Route::post('/registrar_afiliacion', [ReciboDigitalController::class, 'registrarAfiliacion']);
+
+Route::post('/consulta_deuda', [DeudaController::class, 'consultar']);
+
